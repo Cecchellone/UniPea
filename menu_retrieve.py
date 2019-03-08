@@ -64,7 +64,9 @@ async def makeimg(mensa_name):
         print("Menù exported")
         os.remove(pdf_name)
         print("Cleared temporary files")
+        return os.path.join(path, mensa_name + ".png")
     else:
         print("Unable to find the menù")
+        return
 
-asyncio.run(makeimg(input("Type mensa name: ")))
+#asyncio.run(makeimg(input("Type mensa name: ")))
