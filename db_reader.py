@@ -5,7 +5,14 @@ import sqlite3
 database = sqlite3.connect("UniPea.db")
 database.row_factory = sqlite3.Row
 
-path = os.path.dirname(os.path.realpath(__file__))
+working_path   = os.path.dirname(os.path.realpath(__file__))
+path = os.path.join(working_path, "query")
+
+def time_to_minutes(var):
+    if isinstance(var, datetime.datetime):
+        return (var.minute + var.hour*60)
+    elif type(var) == int:
+        return datetime.timedelta(minutes=var)
 
 def get_query(sql_file_name, **kwargs):
     rem_identifier = "--#"
@@ -20,7 +27,7 @@ def get_query(sql_file_name, **kwargs):
 
 def TimeTable(name, weekday, **kwargs):
     '''kind -> "PV" prendi e vai'''
-    query = get_query(os.path.join(path, "GetOrari.sql"), name=name, weekday=weekday, **kwargs)
+    query = get_query(os.path.join(path, "get_timetable.sql"), name=name, weekday=weekday, **kwargs)
     row = database.execute(query).fetchone()
     if row is None:
         return None
@@ -42,7 +49,23 @@ def EndDay(name):
     else:
         return result["ID"], result["EndDay"], (result["Splitted"] is not None and result["Splitted"]>=1)
 
+def NowOpen(date, **kwargs):
+    query = get_query(os.path.join(path, "now_open.sql"), weekday=date.weekday(), minutes=time_to_minutes(date), **kwargs)
+    #return [tuple([x["ID"], x["kind"]]) for x in database.execute(query).fetchall()]
+    result = []
+    for name, kind in database.execute(query).fetchall():
+        if kind is None:
+            kind = 'M'
+        if len(result) > 0 and name == result[-1][0]:
+            result[-1][1].append(kind)
+        else:
+            result.append((name, [kind]))
+    return result
+
 '''
+for x in NowOpen(datetime.datetime.now() - datetime.timedelta(minutes=30), ):
+    print(*x, sep='\t')
+
 print(TimeTable("martiri", 4, kind="PV"))
 
 pranzo, cena = TimeTable("centrale", 5)
