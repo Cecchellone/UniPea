@@ -8,6 +8,9 @@ database.row_factory = sqlite3.Row
 working_path   = os.path.dirname(os.path.realpath(__file__))
 path = os.path.join(working_path, "query")
 
+def clean(text):
+    return str(text).strip().lower()
+
 def time_to_minutes(var):
     if isinstance(var, datetime.datetime):
         return (var.minute + var.hour*60)
@@ -24,6 +27,13 @@ def get_query(sql_file_name, **kwargs):
             query = query.replace(rem_identifier + key, "")
             query = query.replace(var_identifier + key, str(val))
     return query
+
+def get_id(name):
+    output = database.execute("select ID from Synonyms where Name = '" + clean(name) + "'").fetchone()
+    if output is None:
+        return None
+    else:
+        return str(output[0])
 
 def TimeTable(name, weekday, **kwargs):
     '''kind -> "PV" prendi e vai'''
@@ -62,7 +72,17 @@ def NowOpen(date, **kwargs):
             result.append((name, [kind]))
     return result
 
+def RndMsg(name):
+    query = get_query(os.path.join(path, "rnd_msg.sql"), name=name.lower())
+    result = database.execute(query).fetchone()
+    if result is None:
+        return None
+    else:
+        return str(result["Text"])
 '''
+while True:
+    print(RndMsg(input("nome mensa: ")))
+
 for x in NowOpen(datetime.datetime.now() - datetime.timedelta(minutes=30), ):
     print(*x, sep='\t')
 

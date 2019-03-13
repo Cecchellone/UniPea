@@ -8,5 +8,5 @@ where (WeekDay ISNULL OR WeekDay like ('%#weekday%')) AND
 		DinnerStart NOTNULL AND DinnerEnd NOTNULL AND
 		DinnerStart <= #minutes AND DinnerEnd > #minutes
 	))
-	--#name AND Names = #name
+	--#name AND Name = #name
 order by ID;

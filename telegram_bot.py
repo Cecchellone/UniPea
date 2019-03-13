@@ -4,6 +4,7 @@ import telepot
 from telepot.aio.loop import MessageLoop
 from telepot.aio.delegate import pave_event_space, per_chat_id, create_open
 import menu_retrieve as getmen
+import db_reader as dbr
 
 class Answerer(telepot.aio.helper.ChatHandler):
     def __init__(self, *args, **kwargs):
@@ -11,13 +12,16 @@ class Answerer(telepot.aio.helper.ChatHandler):
 
     async def on_chat_message(self, msg):
         chat_id = msg['chat']['id']
-        message = msg['text']  #.lower()
-        uname = msg['chat']['username']
+        user_name = msg['chat']['username']
+        real_name = (msg['from']['first_name'], msg['from']['last_name'])
 
-        if message.lower() in ["cammeo", "betti", "martiri", "rosellini"]:
+        message = msg['text']  #.lower()
+        
+        #if message.lower() in ["cammeo", "betti", "martiri", "rosellini"]:
+        if dbr.get_id(message) is not None:
             img_path = await getmen.makeimg(message)
 
-            await self.sender.sendPhoto(open(img_path, 'rb'))
+            await self.sender.sendPhoto(open(img_path, 'rb'), caption=dbr.RndMsg(message))
         else:
             await self.sender.sendMessage("no menù found")
 

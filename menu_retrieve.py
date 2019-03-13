@@ -4,25 +4,23 @@ import time
 import datetime
 import urllib.request
 from pdf2image import convert_from_path as cfp
+import db_reader as dbr
    
-def getperiod(**kwargs):
-    period = "weekly"
-    for arg, val in kwargs.items():
-        if arg == "period":
-            period = val
-
+def getperiod(end_day):
     Today = datetime.datetime.now()
-    if period == "weekly":
-        Lastmon = Today - datetime.timedelta(days=Today.weekday())
-        Nextsun = Lastmon + datetime.timedelta(days=6)
-        return tuple([Lastmon, Nextsun])
+
+    if end_day is not None:
+        Lastmon = Today   - datetime.timedelta(days=Today.weekday())
+        EndDay  = Lastmon + datetime.timedelta(days=end_day)
+        return Lastmon, EndDay
     return ValueError
 
 def geturl(date, name):
     base_url = "http://www.dsu.toscana.it/it/Men%C3%B9"
-    begin, end = getperiod()
-
-    return base_url + "-dal-" + begin.strftime("%d.%m.%y") + "-al-" + end.strftime("%d.%m.%y") + "-" + name + ".pdf"
+    ID, end_day, splitted = dbr.EndDay(name)
+    begin, end = getperiod(end_day)
+    #if not splitted:
+    return base_url + "-dal-" + begin.strftime("%d.%m.%y") + "-al-" + end.strftime("%d.%m.%y") + "-" + ID + ".pdf"
 
 async def retrieve_file(url, retry_attempts, retry_interval):
     for i in range(retry_attempts):
