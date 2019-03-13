@@ -2,11 +2,18 @@ import os
 import datetime
 import sqlite3
 
+working_path = os.path.dirname(os.path.realpath(__file__))
+path = os.path.join(working_path, "query")
+
 database = sqlite3.connect("UniPea.db")
 database.row_factory = sqlite3.Row
 
-working_path   = os.path.dirname(os.path.realpath(__file__))
-path = os.path.join(working_path, "query")
+build_users = not os.path.isfile(os.path.join(working_path, "Users.db"))
+user_db = sqlite3.connect("Users.db")
+user_db.row_factory = sqlite3.Row
+if build_users:
+    with open(os.path.join(path, "Users.db.sql"), 'r') as sql_file:
+        user_db.executescript(sql_file.read())
 
 def clean(text):
     return str(text).strip().lower()
@@ -27,6 +34,25 @@ def get_query(sql_file_name, **kwargs):
             query = query.replace(rem_identifier + key, "")
             query = query.replace(var_identifier + key, str(val))
     return query
+
+def add_user(info):
+    timestamp = int(datetime.datetime.now().timestamp())
+
+    q_find = "SELECT COUNT(*) FROM Users WHERE UID = ? ;"
+    if user_db.execute(q_find, (info['id'],)).fetchone()[0] <= 0:
+        query = "INSERT OR REPLACE INTO Users(UID, Name, Subscription, LastUse) VALUES(?, ?, ?, ?);"
+        name = info['first_name']
+        if 'username' in info.keys():
+            name = info['username']
+        elif 'last_name' in info.keys():
+            name = name + " " + info['last_name']
+            
+        user_db.execute(query, (info['id'], name, timestamp, timestamp))
+        #print("added", username)
+    else:
+        query = "UPDATE Users SET LastUse = ? WHERE UID = ?;"
+        user_db.execute(query, (timestamp, info['id']))
+    user_db.commit()
 
 def get_id(name):
     output = database.execute("select ID from Synonyms where Name = '" + clean(name) + "'").fetchone()
@@ -79,6 +105,7 @@ def RndMsg(name):
         return None
     else:
         return str(result["Text"])
+
 '''
 while True:
     print(RndMsg(input("nome mensa: ")))

@@ -5,7 +5,12 @@ import datetime
 import urllib.request
 from pdf2image import convert_from_path as cfp
 import db_reader as dbr
-   
+
+working_path = os.path.dirname(os.path.realpath(__file__))
+path = os.path.join(working_path, "images")
+if not os.path.isdir(path):
+    os.mkdir(path)
+
 def getperiod(end_day):
     Today = datetime.datetime.now()
 
@@ -36,7 +41,7 @@ async def retrieve_file(url, retry_attempts, retry_interval):
         print("Unable to locate the file")
         return ""
 
-async def save_png(pages, path, name):
+async def save_png(pages, name):
     page_num = len(pages)
 
     for i, page in enumerate(pages):
@@ -49,7 +54,7 @@ async def save_png(pages, path, name):
 
 async def makeimg(mensa_name):
     mensa_name = mensa_name.lower()
-    path = os.path.dirname(os.path.realpath(__file__))
+    #path = os.path.dirname(os.path.realpath(__file__))
     url = geturl(datetime.datetime.now(), mensa_name)
     print("Url:", url)
 
@@ -58,7 +63,7 @@ async def makeimg(mensa_name):
     if pdf_name != "":
         print("Converting pages")
         pages = cfp(pdf_name, 500)
-        await save_png(pages, path, mensa_name + ".png")
+        await save_png(pages, mensa_name + ".png")
         print("Menù exported")
         os.remove(pdf_name)
         print("Cleared temporary files")

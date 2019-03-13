@@ -11,19 +11,21 @@ class Answerer(telepot.aio.helper.ChatHandler):
         super(Answerer, self).__init__(*args, **kwargs)
 
     async def on_chat_message(self, msg):
-        chat_id = msg['chat']['id']
-        user_name = msg['chat']['username']
-        real_name = (msg['from']['first_name'], msg['from']['last_name'])
-
+        #chat_id = msg['chat']['id']
+        #user_name = msg['chat']['username']
+        #real_name = (msg['from']['first_name'], msg['from']['last_name'])
         message = msg['text']  #.lower()
         
+        print(msg['from'])    
+        dbr.add_user(msg["from"])
+        #print(chat_id, user_name, *real_name)
         #if message.lower() in ["cammeo", "betti", "martiri", "rosellini"]:
         if dbr.get_id(message) is not None:
+            #loop.create_task(self.replyer(message))
             img_path = await getmen.makeimg(message)
-
-            await self.sender.sendPhoto(open(img_path, 'rb'), caption=dbr.RndMsg(message))
+            loop.create_task(self.sender.sendPhoto(open(img_path, 'rb'), caption=dbr.RndMsg(message), parse_mode="HTML"))
         else:
-            await self.sender.sendMessage("no menù found")
+            loop.create_task(self.sender.sendMessage("no menù found"))
 
 #Please, create a file named "token.txt" containing yout telegram token
 #I made a separate unsynced file for privacy. so do it too
