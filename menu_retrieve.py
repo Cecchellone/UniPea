@@ -43,21 +43,9 @@ async def retrieve_file(url, retry_attempts, retry_interval):
         print("Unable to locate the file")
         return ""
 
-async def save_png(pages, name):
-    page_num = len(pages)
-    stream = []
-    for i, page in enumerate(pages):
-        print("Exporting page", i+1, "of", page_num)
-        '''
-        file_name = name
-        if page_num >1:
-            file_name = "{0}_{2}.{1}".format(*os.path.splitext(name) + [i])
-        page.save(os.path.join(path, file_name), "PNG")
-        '''
-        stream.append(io.BytesIO())
-        page.save(stream[-1], format="PNG")
-    dbr.add_image([x.getvalue() for x in stream], name, None, datetime.datetime.now())
-    return page_num
+async def save_png(images, name):
+    dbr.add_image(images, name, None, datetime.datetime.now())
+    return len(images)
 
 async def makeimg(mensa_name):
     mensa_name = mensa_name.lower()
@@ -78,10 +66,10 @@ async def makeimg(mensa_name):
     else:
         print("Unable to find the menù")
         return
-'''
+
 files = ["images\\cammeo.png"]
 pages = [Image.open(os.path.join(working_path, x)) for x in files]
 asyncio.run(save_png(pages, "cammeo"))
-
+'''
 #asyncio.run(makeimg(input("Type mensa name: ")))
 '''

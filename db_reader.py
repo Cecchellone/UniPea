@@ -1,4 +1,5 @@
 import os
+import io
 import datetime
 import sqlite3
 from PIL import Image
@@ -56,13 +57,28 @@ def add_user(info):
     user_db.commit()
 
 def add_image(images, MID, meal, expire):
-    end_date = (expire.replace(hour=0, minute=0, second=0) + datetime.timedelta(days=1)).timestamp()
+    end_date = int((expire.replace(hour=0, minute=0, second=0) + datetime.timedelta(days=1)).timestamp())
     #ID, Meal, Page, Expire, Image
     query = "INSERT OR REPLACE INTO Images VALUES(?, ?, ?, ?, ?)"
-    for index, image in enumerate(images):
-        database.execute(query, (MID, meal, index, int(end_date), sqlite3.Binary(image)))
+    for index, image in enumerate(zip(images)):
+        stream = io.BytesIO()
+        image.save(strean, format.png)
+        database.execute(query, (MID, meal, index, end_date, sqlite3.Binary(stream.value())))
     database.commit()
     #file = cursor.execute('select bin from File where id=?', (id,)).fetchone()
+
+def get_image(name, **kwargs):
+    timestamp = datetime.datetime.now().timestamp()
+    query = get_query(os.path.join(path, "get_images.sql"), name=name, expire=int(timestamp), **kwargs)
+    cursor = database.execute(query)
+    images = []
+    for row in cursor:
+        img_stream = io.BytesIO()
+        #pdf_stream = io.BytesIO()
+        img_stream.write(row['image'])
+        #pdf_stream.write(row['pdf'])
+        images.append(Image.open(img_stream))
+    return images
 
 def get_id(name):
     output = database.execute("select ID from Synonyms where Name = '" + clean(name) + "'").fetchone()
@@ -115,6 +131,8 @@ def RndMsg(name):
         return None
     else:
         return str(result["Text"])
+
+Image._show(get_image("cammeo")[0])
 
 '''
 with open(os.path.join(working_path, "images\\cammeo.png"), 'rb') as imgfile:
