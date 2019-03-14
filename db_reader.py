@@ -1,6 +1,7 @@
 import os
 import datetime
 import sqlite3
+from PIL import Image
 
 working_path = os.path.dirname(os.path.realpath(__file__))
 path = os.path.join(working_path, "query")
@@ -53,6 +54,15 @@ def add_user(info):
         query = "UPDATE Users SET LastUse = ? WHERE UID = ?;"
         user_db.execute(query, (timestamp, info['id']))
     user_db.commit()
+
+def add_image(images, MID, meal, expire):
+    end_date = (expire.replace(hour=0, minute=0, second=0) + datetime.timedelta(days=1)).timestamp()
+    #ID, Meal, Page, Expire, Image
+    query = "INSERT OR REPLACE INTO Images VALUES(?, ?, ?, ?, ?)"
+    for index, image in enumerate(images):
+        database.execute(query, (MID, meal, index, int(end_date), sqlite3.Binary(image)))
+    database.commit()
+    #file = cursor.execute('select bin from File where id=?', (id,)).fetchone()
 
 def get_id(name):
     output = database.execute("select ID from Synonyms where Name = '" + clean(name) + "'").fetchone()
@@ -107,6 +117,9 @@ def RndMsg(name):
         return str(result["Text"])
 
 '''
+with open(os.path.join(working_path, "images\\cammeo.png"), 'rb') as imgfile:
+    add_image([imgfile.read()], "cammeo", None, datetime.datetime.now())        
+
 while True:
     print(RndMsg(input("nome mensa: ")))
 
