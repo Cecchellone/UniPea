@@ -40,7 +40,7 @@ def add_user(info):
 
     q_find = "SELECT COUNT(*) FROM Users WHERE UID = ? ;"
     if user_db.execute(q_find, (info['id'],)).fetchone()[0] <= 0:
-        query = "INSERT OR REPLACE INTO Users(UID, Name, Subscription, LastUse) VALUES(?, ?, ?, ?);"
+        query = "INSERT OR REPLACE INTO Users(UID, Name, Subscription, LastAccess) VALUES(?, ?, ?, ?);"
         name = info['first_name']
         if 'username' in info.keys():
             name = info['username']
@@ -50,7 +50,7 @@ def add_user(info):
         user_db.execute(query, (info['id'], name, timestamp, timestamp))
         #print("added", username)
     else:
-        query = "UPDATE Users SET LastUse = ? WHERE UID = ?;"
+        query = "UPDATE Users SET LastAccess = ? WHERE UID = ?;"
         user_db.execute(query, (timestamp, info['id']))
     user_db.commit()
 
