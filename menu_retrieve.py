@@ -67,9 +67,10 @@ async def makeimg(mensa_name):
         print("Unable to find the menù")
         return
 
+'''
 files = ["images\\cammeo.png"]
 pages = [Image.open(os.path.join(working_path, x)) for x in files]
 asyncio.run(save_png(pages, "cammeo"))
-'''
+
 #asyncio.run(makeimg(input("Type mensa name: ")))
 '''

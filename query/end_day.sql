@@ -1,3 +1,3 @@
 SELECT DISTINCT ID, EndDay, Splitted
-FROM Keys NATURAL JOIN Synonyms
+FROM Menus NATURAL JOIN Structures
 WHERE Name = "#name"

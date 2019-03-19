@@ -42,7 +42,7 @@ def add_user(info):
 
     q_find = "SELECT COUNT(*) FROM Users WHERE UID = ? ;"
     if user_db.execute(q_find, (info['id'],)).fetchone()[0] <= 0:
-        query = "INSERT OR REPLACE INTO Users(UID, Name, Subscription, LastUse) VALUES(?, ?, ?, ?);"
+        query = "INSERT OR REPLACE INTO Users(UID, Name, Subscription, LastAccess) VALUES(?, ?, ?, ?);"
         name = info['first_name']
         if 'username' in info.keys():
             name = info['username']
@@ -52,18 +52,18 @@ def add_user(info):
         user_db.execute(query, (info['id'], name, timestamp, timestamp))
         #print("added", username)
     else:
-        query = "UPDATE Users SET LastUse = ? WHERE UID = ?;"
+        query = "UPDATE Users SET LastAccess = ? WHERE UID = ?;"
         user_db.execute(query, (timestamp, info['id']))
     user_db.commit()
 
 def add_image(images, MID, meal, expire):
     end_date = int((expire.replace(hour=0, minute=0, second=0) + datetime.timedelta(days=1)).timestamp())
     #ID, Meal, Page, Expire, Image
-    query = "INSERT OR REPLACE INTO Images VALUES(?, ?, ?, ?, ?)"
+    query = "INSERT OR REPLACE INTO Files VALUES(?, ?, ?, ?, ?)"
     for index, image in enumerate(zip(images)):
         stream = io.BytesIO()
-        image.save(strean, format.png)
-        database.execute(query, (MID, meal, index, end_date, sqlite3.Binary(stream.value())))
+        image.save(stream, format(png))
+        database.execute(query, (MID, meal, index, end_date, sqlite3.Binary(stream.value()), None))
     database.commit()
     #file = cursor.execute('select bin from File where id=?', (id,)).fetchone()
 
@@ -81,7 +81,7 @@ def get_image(name, **kwargs):
     return images
 
 def get_id(name):
-    output = database.execute("select ID from Synonyms where Name = '" + clean(name) + "'").fetchone()
+    output = database.execute("select ID from Structures where Name = '" + clean(name) + "'").fetchone()
     if output is None:
         return None
     else:
@@ -131,10 +131,9 @@ def RndMsg(name):
         return None
     else:
         return str(result["Text"])
-
+'''
 Image._show(get_image("cammeo")[0])
 
-'''
 with open(os.path.join(working_path, "images\\cammeo.png"), 'rb') as imgfile:
     add_image([imgfile.read()], "cammeo", None, datetime.datetime.now())        
 

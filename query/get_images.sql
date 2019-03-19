@@ -1,5 +1,5 @@
 SELECT Image, Meal --PDF
-FROM Images
+FROM Files
 WHERE ID = "#name" AND
 	Expire > #expire
 	--#meal AND Meal = "#meal"

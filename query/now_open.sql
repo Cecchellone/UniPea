@@ -1,4 +1,4 @@
-select ID, Kind
+select Name, Kind
 from Timetable
 	--#name natural join Synonims
 where (WeekDay ISNULL OR WeekDay like ('%#weekday%')) AND 
@@ -9,4 +9,4 @@ where (WeekDay ISNULL OR WeekDay like ('%#weekday%')) AND
 		DinnerStart <= #minutes AND DinnerEnd > #minutes
 	))
 	--#name AND Name = #name
-order by ID;
+order by Name;
