@@ -58,14 +58,14 @@ async def makeimg(mensa_name):
     if pdf_name != "":
         print("Converting pages")
         pages = cfp(pdf_name, 500)
-        await save_png(pages, mensa_name + ".png")
+        await save_png(pages, mensa_name)
         print("Menù exported")
-        os.remove(pdf_name)
-        print("Cleared temporary files")
-        return os.path.join(path, mensa_name + ".png")
+        #os.remove(pdf_name)
+        #print("Cleared temporary files")
+        #return os.path.join(path, mensa_name + ".png")
     else:
         print("Unable to find the menù")
-        return
+    return
 
 '''
 files = ["images\\cammeo.png"]

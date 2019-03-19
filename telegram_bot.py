@@ -1,5 +1,6 @@
 import asyncio
 import os
+import io
 import telepot
 from telepot.aio.loop import MessageLoop
 from telepot.aio.delegate import pave_event_space, per_chat_id, create_open
@@ -22,8 +23,13 @@ class Answerer(telepot.aio.helper.ChatHandler):
         #if message.lower() in ["cammeo", "betti", "martiri", "rosellini"]:
         if dbr.get_id(message) is not None:
             #loop.create_task(self.replyer(message))
-            img_path = await getmen.makeimg(message)
-            loop.create_task(self.sender.sendPhoto(open(img_path, 'rb'), caption=dbr.RndMsg(message), parse_mode="HTML"))
+            await getmen.makeimg(message)
+            for x in dbr.get_image(message):
+                stream = io.BytesIO()
+                x.save(stream, "PNG")
+                stream.seek(0)
+                loop.create_task(self.sender.sendPhoto(('z.png', stream), caption=dbr.RndMsg(message), parse_mode="HTML"))
+                print("Menu sent")
         else:
             loop.create_task(self.sender.sendMessage("no menù found"))
 

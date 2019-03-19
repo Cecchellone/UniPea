@@ -37,6 +37,13 @@ def get_query(sql_file_name, **kwargs):
             query = query.replace(var_identifier + key, str(val))
     return query
 
+def exist_image(ID, expire):
+    query = get_query(os.path.join(path, "check_for_image.sql"), id=ID, expire=expire)
+    if database.execute(query) is not None:
+        return False
+    else:
+        return True
+
 def add_user(info):
     timestamp = int(datetime.datetime.now().timestamp())
 
@@ -59,23 +66,29 @@ def add_user(info):
 def add_image(images, MID, meal, expire):
     end_date = int((expire.replace(hour=0, minute=0, second=0) + datetime.timedelta(days=1)).timestamp())
     #ID, Meal, Page, Expire, Image
-    query = "INSERT OR REPLACE INTO Files VALUES(?, ?, ?, ?, ?)"
-    for index, image in enumerate(zip(images)):
+
+    search_query = get_query(os.path.join(path, "check_for_image.sql"), id=MID, expire=expire)
+    if database.execute(search_query) is not None:
+        return
+
+    query = "INSERT OR REPLACE INTO Files VALUES(?, ?, ?, ?, ?, ?);"
+    for index, image in enumerate(images):
         stream = io.BytesIO()
-        image.save(stream, format(png))
-        database.execute(query, (MID, meal, index, end_date, sqlite3.Binary(stream.value()), None))
+        image.save(stream, "PNG")
+        stream.seek(0)
+        database.execute(query, (MID, meal, index, end_date, sqlite3.Binary(stream.getvalue()), None))
     database.commit()
     #file = cursor.execute('select bin from File where id=?', (id,)).fetchone()
 
 def get_image(name, **kwargs):
     timestamp = datetime.datetime.now().timestamp()
-    query = get_query(os.path.join(path, "get_images.sql"), name=name, expire=int(timestamp), **kwargs)
+    query = get_query(os.path.join(path, "get_images.sql"), id=name, expire=int(timestamp), **kwargs)
     cursor = database.execute(query)
     images = []
     for row in cursor:
         img_stream = io.BytesIO()
         #pdf_stream = io.BytesIO()
-        img_stream.write(row['image'])
+        img_stream.write(row['Image'])
         #pdf_stream.write(row['pdf'])
         images.append(Image.open(img_stream))
     return images
