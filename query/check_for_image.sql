@@ -1,5 +1,6 @@
 SELECT *
 FROM Files
     natural join Structures
-WHERE ID= "#id"
-    AND Expire = "#expire";
+WHERE Expire = #expire
+    --#id AND ID= "#id"
+    --#name AND Name= "#name"

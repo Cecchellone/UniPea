@@ -37,8 +37,9 @@ def get_query(sql_file_name, **kwargs):
             query = query.replace(var_identifier + key, str(val))
     return query
 
-def exist_image(ID, expire):
-    query = get_query(os.path.join(path, "check_for_image.sql"), id=ID, expire=expire)
+def exist_image(expire, **kwargs):
+    query = get_query(os.path.join(path, "check_for_image.sql"), expire=expire, **kwargs)
+    print(query)
     if database.execute(query) is not None:
         return False
     else:
@@ -67,22 +68,26 @@ def add_image(images, MID, meal, expire):
     end_date = int((expire.replace(hour=0, minute=0, second=0) + datetime.timedelta(days=1)).timestamp())
     #ID, Meal, Page, Expire, Image
 
-    search_query = get_query(os.path.join(path, "check_for_image.sql"), id=MID, expire=expire)
-    if database.execute(search_query) is not None:
-        return
+    #if exist_image(end_date, name=MID):
+    #    print("image already on DB")
+    #    return
+    #search_query = get_query(os.path.join(path, "check_for_image.sql"), name=MID, expire=expire)
+    #if database.execute(search_query) is not None:
+    #    return
 
     query = "INSERT OR REPLACE INTO Files VALUES(?, ?, ?, ?, ?, ?);"
     for index, image in enumerate(images):
         stream = io.BytesIO()
         image.save(stream, "PNG")
         stream.seek(0)
-        database.execute(query, (MID, meal, index, end_date, sqlite3.Binary(stream.getvalue()), None))
+        database.execute(query, (get_id(MID), meal, index, end_date, sqlite3.Binary(stream.getvalue()), None))
     database.commit()
     #file = cursor.execute('select bin from File where id=?', (id,)).fetchone()
 
 def get_image(name, **kwargs):
     timestamp = datetime.datetime.now().timestamp()
-    query = get_query(os.path.join(path, "get_images.sql"), id=name, expire=int(timestamp), **kwargs)
+    MID= get_id(name)
+    query = get_query(os.path.join(path, "get_images.sql"), id=MID, expire=int(timestamp), **kwargs)
     cursor = database.execute(query)
     images = []
     for row in cursor:
