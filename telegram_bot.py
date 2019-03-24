@@ -22,6 +22,7 @@ class Answerer(telepot.aio.helper.ChatHandler):
         #print(chat_id, user_name, *real_name)
         #if message.lower() in ["cammeo", "betti", "martiri", "rosellini"]:
         if dbr.get_id(message) is not None:
+            await self.sender.sendMessage("Preparazione del menù in corso...")
             #loop.create_task(self.replyer(message))
             await getmen.makeimg(message)
             for x in dbr.get_image(message):
