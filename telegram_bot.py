@@ -58,9 +58,9 @@ class Answerer(telepot.aio.helper.ChatHandler):
         #COORDINATE
         lat, lon = dbr.get_coordinates(msg['text'])
         if lat is not None or lon is not None:
-            loop.create_task(self.sender.sendLocation(latitude=lat, longitude=lon))
+            await self.sender.sendLocation(latitude=lat, longitude=lon)
         else:
-            loop.create_task(self.sender.sendMessage("Questa mensa non ha ancora le coordinate..."))     
+            await self.sender.sendMessage("Questa mensa non ha ancora le coordinate...")  
 
         #ORARI
         TimeTables = dbr.TimeTables(msg['text'], kind="PV")

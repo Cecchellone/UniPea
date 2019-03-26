@@ -3,6 +3,7 @@ import calendar
 import datetime
 import db_reader as dbr
 from string import Template
+#import db_reader as dbr
 
 class DeltaTemplate(Template):
     delimiter = "%"
@@ -79,8 +80,29 @@ def makeperiod(WD, LS, LE, DS, DE):
         text += "Cena:"
         text += "\t" + writemeal(DS) + " -> " + writemeal(DE) + "\n"
     return text
-    
+
+def regroup(Dictionary):
+    Result = {}
+    for key, value in Dictionary.items():
+        if value not in Result.values():
+            newkey = ''.join([str(FK) if value == FV else '' for FK, FV in Dictionary.items()])
+            Result[newkey] = value
+    return Result
+
+def meal_extract(Week, Meal):
+    return dict(zip(range(7), [x[Meal] if Meal in x else None for x in Week.values()]))
+
+def makeperiod2(Table):
+    text = ""
+    for Kind, Week in Table.items():
+        Lunches = regroup(meal_extract(Week, "Lunch" ))
+        Dinners = regroup(meal_extract(Week, "Dinner"))
+        print("Lunch  ", Lunches)
+        print("Dinner ", Dinners)
+
 '''
+makeperiod2(dbr.TimeTables2("martiri"))
+
 A = ("01234", 705, 870, 1140, 1275)
 B = ("5", 720, 870, None, None)
 C = ("6", 720, 870, 1140, 1275)

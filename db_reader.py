@@ -134,6 +134,27 @@ def TimeTables(name, **kwargs):
     '''
     return [(row['WeekDay'], row['LunchStart'], row['LunchEnd'], row['DinnerStart'], row['DinnerEnd']) for row in rows]
 
+def TimeTables2(name, **kwargs):
+    query = get_query(os.path.join(path, "get_timetable.sql"), name=name, **kwargs)
+    rows = database.execute(query)
+
+    Table = {}
+    for row in rows:
+        kind = row['Kind']
+        if kind not in Table:
+            Table[kind] = dict(zip(range(7), [None]*7))
+        
+        Meals = {}
+        if row['LunchStart']  is not None and row['LunchEnd']  is not None:
+            Meals["Lunch"]  = (row['LunchStart'],  row['LunchEnd'])
+        if row['DinnerStart'] is not None and row['DinnerEnd'] is not None:
+            Meals["Dinner"] = (row['DinnerStart'], row['DinnerEnd'])
+
+        for char in row['WeekDay']: # [int(x) for x in row['WeekDay']]
+            Table[kind][int(char)] = Meals
+
+    return Table
+
 def EndDay(name):
     query = get_query(os.path.join(path, "end_day.sql"), name=name)
     result = database.execute(query).fetchone()
