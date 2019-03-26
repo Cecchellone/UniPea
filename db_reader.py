@@ -121,6 +121,19 @@ def TimeTable(name, weekday, **kwargs):
     else:
         return None, None
 
+def TimeTables(name, **kwargs):
+    query = get_query(os.path.join(path, "get_timetable.sql"), name=name, **kwargs)
+    rows = database.execute(query)
+    '''
+    Dictionary = {}
+    for row in rows:
+        if row['kind'] not in Dictionary:
+            Dictionary.add[row['kind']]
+        SingleSet = (row['WeekDay'], row['LunchStart'], row['LunchEnd'], row['DinnerStart'], row['DinnerEnd'])
+        Dictionary[row['Kind']].append(SingleSet)
+    '''
+    return [(row['WeekDay'], row['LunchStart'], row['LunchEnd'], row['DinnerStart'], row['DinnerEnd']) for row in rows]
+
 def EndDay(name):
     query = get_query(os.path.join(path, "end_day.sql"), name=name)
     result = database.execute(query).fetchone()

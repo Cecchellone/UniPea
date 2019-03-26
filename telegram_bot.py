@@ -6,6 +6,7 @@ from telepot.aio.loop import MessageLoop
 from telepot.aio.delegate import pave_event_space, per_chat_id, create_open
 import menu_retrieve as getmen
 import db_reader as dbr
+import timetable as ttb
 
 class Answerer(telepot.aio.helper.ChatHandler):
     Flow = {}
@@ -54,12 +55,19 @@ class Answerer(telepot.aio.helper.ChatHandler):
             loop.create_task(self.sender.sendMessage("no menù found"))
 
     async def SendInfo(self, msg):
+        #COORDINATE
         lat, lon = dbr.get_coordinates(msg['text'])
-        if lat is None or lon is None:
-            loop.create_task(self.sender.sendMessage("Questa mensa non ha ancora le coordinate..."))
-            return
-        
-        loop.create_task(self.sender.sendLocation(latitude=lat, longitude=lon))
+        if lat is not None or lon is not None:
+            loop.create_task(self.sender.sendLocation(latitude=lat, longitude=lon))
+        else:
+            loop.create_task(self.sender.sendMessage("Questa mensa non ha ancora le coordinate..."))     
+
+        #ORARI
+        TimeTables = dbr.TimeTables(msg['text'], kind="PV")
+        if len(TimeTables) > 0:
+            loop.create_task(self.sender.sendMessage("\n".join([ttb.makeperiod(*Table) for Table in TimeTables])))
+        else:
+            loop.create_task(self.sender.sendMessage("Questa mensa non ha ancora gli orari..."))       
 
 #Please, create a file named "token.txt" containing yout telegram token
 #I made a separate unsynced file for privacy. so do it too
