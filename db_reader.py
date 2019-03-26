@@ -142,6 +142,14 @@ def NowOpen(date, **kwargs):
             result.append((name, [kind]))
     return result
 
+def get_coordinates(name):
+    query = get_query(os.path.join(path, "get_coordinates.sql"), name=name.lower())
+    result = database.execute(query).fetchone()
+    if result is None:
+        return None, None
+    else:
+        return result["Latitude"], result["Longitude"]
+
 def RndMsg(name):
     query = get_query(os.path.join(path, "rnd_msg.sql"), name=name.lower())
     result = database.execute(query).fetchone()

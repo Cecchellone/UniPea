@@ -8,18 +8,37 @@ import menu_retrieve as getmen
 import db_reader as dbr
 
 class Answerer(telepot.aio.helper.ChatHandler):
+    Flow = {}
+    
     def __init__(self, *args, **kwargs):
         super(Answerer, self).__init__(*args, **kwargs)
 
     async def on_chat_message(self, msg):
-        #chat_id = msg['chat']['id']
+        chat_id = msg['chat']['id']
         #user_name = msg['chat']['username']
         #real_name = (msg['from']['first_name'], msg['from']['last_name'])
+        #print(chat_id, user_name, *real_name)
+
         message = msg['text']  #.lower()
         
         print(msg['from'])    
+        print(message)
         dbr.add_user(msg["from"])
-        #print(chat_id, user_name, *real_name)
+        
+        if message.startswith("/"): #COMMAND
+            if message == "/info":
+                loop.create_task(self.sender.sendMessage("Di quale mensa vuoi informazioni?"))
+                self.Flow[chat_id] = "info" #Imposta stato dell'utente su INFO
+        
+        elif chat_id in self.Flow:  #FLOW
+            if self.Flow[chat_id] == "info":
+                loop.create_task(self.SendInfo(msg))
+            del self.Flow[chat_id]
+        else:
+            loop.create_task(self.SendMenu(msg))
+
+    async def SendMenu(self, msg):
+        message = msg['text'] #.lower()
         #if message.lower() in ["cammeo", "betti", "martiri", "rosellini"]:
         if dbr.get_id(message) is not None:
             await self.sender.sendMessage("Preparazione del menù in corso...")
@@ -33,6 +52,14 @@ class Answerer(telepot.aio.helper.ChatHandler):
                 print("Menu sent")
         else:
             loop.create_task(self.sender.sendMessage("no menù found"))
+
+    async def SendInfo(self, msg):
+        lat, lon = dbr.get_coordinates(msg['text'])
+        if lat is None or lon is None:
+            loop.create_task(self.sender.sendMessage("Questa mensa non ha ancora le coordinate..."))
+            return
+        
+        loop.create_task(self.sender.sendLocation(latitude=lat, longitude=lon))
 
 #Please, create a file named "token.txt" containing yout telegram token
 #I made a separate unsynced file for privacy. so do it too
